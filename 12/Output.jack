@@ -1,0 +1,128 @@
+// Output.jack - Project 12: OS text output to screen
+// Uses a fixed bitmap font stored as character data.
+class Output {
+    static Array screen;
+    static int   cursorRow;
+    static int   cursorCol;
+    static int   ROWS;
+    static int   COLS;
+    static Array charMaps;
+
+    function void init() {
+        let screen    = 16384;
+        let cursorRow = 0;
+        let cursorCol = 0;
+        let ROWS      = 23;   // 256 / 11 chars tall
+        let COLS      = 64;   // 512 / 8 chars wide
+        do Output.initFont();
+        return;
+    }
+
+    function void initFont() {
+        let charMaps = Array.new(127);
+        do Output.create(32,0,0,0,0,0,0,0,0,0,0,0); // Space
+        do Output.create(48,12,30,51,51,51,51,51,30,12,0,0); // 0-9
+        do Output.create(49,12,14,15,12,12,12,12,12,63,0,0);
+        do Output.create(50,30,51,48,24,12,6,3,51,63,0,0);
+        do Output.create(51,30,51,48,48,28,48,48,51,30,0,0);
+        do Output.create(52,48,60,54,51,63,48,48,48,120,0,0);
+        do Output.create(53,63,3,3,31,48,48,48,51,30,0,0);
+        do Output.create(54,28,6,3,31,51,51,51,51,30,0,0);
+        do Output.create(55,63,51,48,48,24,12,12,12,12,0,0);
+        do Output.create(56,30,51,51,51,30,51,51,51,30,0,0);
+        do Output.create(57,30,51,51,51,62,48,48,24,14,0,0);
+        do Output.create(65,0,0,0,12,30,51,63,51,51,0,0); // A
+        do Output.create(69,0,0,0,63,3,3,15,3,63,0,0); // E
+        do Output.create(71,0,0,0,28,6,3,59,51,29,0,0); // G
+        do Output.create(77,0,0,0,33,51,63,45,33,33,0,0); // M
+        do Output.create(79,0,0,0,30,51,51,51,51,30,0,0); // O
+        do Output.create(82,0,0,0,31,51,51,31,15,51,0,0); // R
+        do Output.create(86,0,0,0,51,51,51,51,30,12,0,0); // V
+        return;
+    }
+
+    function void create(int index, int a, int b, int c, int d, int e,
+                         int f, int g, int h, int i, int j, int k) {
+        var Array map;
+        let map = Array.new(11);
+        let charMaps[index] = map;
+        let map[0]=a; let map[1]=b; let map[2]=c; let map[3]=d;
+        let map[4]=e; let map[5]=f; let map[6]=g; let map[7]=h;
+        let map[8]=i; let map[9]=j; let map[10]=k;
+        return;
+    }
+
+    function void moveCursor(int i, int j) {
+        let cursorRow = i;
+        let cursorCol = j;
+        return;
+    }
+
+    function void printChar(char c) {
+        var Array map;
+        var int screenAddr, row, mask, word;
+        if (c = 128) {  // newLine
+            do Output.println();
+            return;
+        }
+        if (c = 129) {  // backSpace
+            do Output.backSpace();
+            return;
+        }
+        if (charMaps[c] = 0) { let c = 32; }  // default to space
+        let map = charMaps[c];
+        let screenAddr = (cursorRow * 11 * 32) + (cursorCol / 2);
+        let row = 0;
+        while (row < 11) {
+            let word = screen[screenAddr];
+            if ((cursorCol & 1) = 0) {
+                // left byte of word
+                let word = (word & (~255)) | (map[row] & 255);
+            } else {
+                // right byte of word
+                let word = (word & 255) | ((map[row] & 255) * 256);
+            }
+            let screen[screenAddr] = word;
+            let screenAddr = screenAddr + 32;
+            let row = row + 1;
+        }
+        let cursorCol = cursorCol + 1;
+        if (cursorCol = COLS) { do Output.println(); }
+        return;
+    }
+
+    function void backSpace() {
+        if (cursorCol > 0) {
+            let cursorCol = cursorCol - 1;
+            do Output.printChar(32);
+            let cursorCol = cursorCol - 1;
+        }
+        return;
+    }
+
+    function void printString(String s) {
+        var int i;
+        let i = 0;
+        while (i < s.length()) {
+            do Output.printChar(s.charAt(i));
+            let i = i + 1;
+        }
+        return;
+    }
+
+    function void printInt(int i) {
+        var String s;
+        let s = String.new(12);
+        do s.setInt(i);
+        do Output.printString(s);
+        do s.dispose();
+        return;
+    }
+
+    function void println() {
+        let cursorRow = cursorRow + 1;
+        let cursorCol = 0;
+        if (cursorRow = ROWS) { let cursorRow = 0; }
+        return;
+    }
+}

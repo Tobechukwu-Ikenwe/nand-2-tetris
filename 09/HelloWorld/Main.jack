@@ -1,0 +1,16 @@
+// Main.jack - Project 9: Sample Hello World program
+/**
+ * Simple HelloWorld program to verify the full Jack compiler and OS stack.
+ * Displays "Hello World" on the screen and draws a circle.
+ */
+class Main {
+    function void main() {
+        do Output.moveCursor(10, 20);
+        do Output.printString("Hello Nand2Tetris!");
+        
+        do Screen.setColor(true);
+        do Screen.drawCircle(256, 128, 50);
+        
+        return;
+    }
+}

@@ -1,0 +1,71 @@
+// Memory.jack - Project 12: OS Memory management
+class Memory {
+    static Array ram;
+    static Array heap;
+    static int   freeList;
+
+    // Heap: starts at 2048, ends at 16383
+    // Each free block: [size, next, ...data...]
+    static int HEAP_BASE;
+    static int HEAP_SIZE;
+
+    function void init() {
+        let ram       = 0;
+        let HEAP_BASE = 2048;
+        let HEAP_SIZE = 14335;   // 16383 - 2048
+        let freeList  = HEAP_BASE;
+        // Initialize first (and only) free block
+        let ram[freeList]     = HEAP_SIZE;  // block size
+        let ram[freeList + 1] = 0;          // next = null
+        return;
+    }
+
+    function int peek(int address) {
+        return ram[address];
+    }
+
+    function void poke(int address, int value) {
+        let ram[address] = value;
+        return;
+    }
+
+    function int alloc(int size) {
+        var int curr, prev, blockSize, result;
+        let curr = freeList;
+        let prev = 0;
+        // First-fit search
+        while (~(curr = 0)) {
+            let blockSize = ram[curr];
+            if (blockSize > (size + 2)) {
+                // Split block: keep the start as free, take the end as allocated
+                let result = curr + blockSize - size;
+                let ram[curr] = blockSize - size - 1;
+                let ram[result] = size + 1;
+                return result + 1;
+            }
+            if (blockSize > size) {
+                // Take the whole block
+                if (prev = 0) {
+                    let freeList = ram[curr + 1];
+                } else {
+                    let ram[prev + 1] = ram[curr + 1];
+                }
+                let ram[curr] = blockSize;
+                return curr + 1;
+            }
+            let prev = curr;
+            let curr = ram[curr + 1];
+        }
+        // No suitable block found - return 0 (error)
+        return 0;
+    }
+
+    function void deAlloc(Array o) {
+        var int block;
+        let block = o - 1;
+        // Prepend block to free list
+        let ram[block + 1] = freeList;
+        let freeList = block;
+        return;
+    }
+}

@@ -1,0 +1,110 @@
+/** Piece class - Handles a falling Tetris piece. */
+class Piece {
+    field int x, y; // Current position on board (y is row, x is col)
+    field int type; // 0..6
+    field int rotation; // 0..3
+    field Array blocksX, blocksY; // 4 block offsets
+
+    constructor Piece new(int pType) {
+        let x = 4;
+        let y = 0;
+        let type = pType;
+        let rotation = 0;
+        let blocksX = Array.new(4);
+        let blocksY = Array.new(4);
+        do updateBlocks();
+        return this;
+    }
+
+    method void dispose() {
+        do blocksX.dispose();
+        do blocksY.dispose();
+        do Memory.deAlloc(this);
+        return;
+    }
+
+    method int getX() { return x; }
+    method int getY() { return y; }
+
+    method void move(int dx, int dy) {
+        let x = x + dx;
+        let y = y + dy;
+        return;
+    }
+
+    method void rotate() {
+        let rotation = (rotation + 1);
+        if (rotation = 4) { let rotation = 0; }
+        do updateBlocks();
+        return;
+    }
+
+    method void unrotate() {
+        let rotation = (rotation - 1);
+        if (rotation < 0) { let rotation = 3; }
+        do updateBlocks();
+        return;
+    }
+
+    method int getBlockX(int i) { return x + blocksX[i]; }
+    method int getBlockY(int i) { return y + blocksY[i]; }
+
+    method void updateBlocks() {
+        // I
+        if (type = 0) {
+            if ((rotation = 0) | (rotation = 2)) {
+                do setBlocks(0, 0, 0, 0, -1, 0, 1, 2);
+            } else {
+                do setBlocks(-1, 0, 1, 2, 0, 0, 0, 0);
+            }
+        }
+        // J
+        if (type = 1) {
+            if (rotation = 0) { do setBlocks(0, 0, 0, -1, 0, 1, 2, 2); }
+            if (rotation = 1) { do setBlocks(0, 1, 2, 2, 0, 0, 0, 1); }
+            if (rotation = 2) { do setBlocks(0, 1, 1, 1, 0, 0, 1, 2); }
+            if (rotation = 3) { do setBlocks(0, 0, 1, 2, 0, 1, 1, 1); }
+        }
+        // L
+        if (type = 2) {
+            if (rotation = 0) { do setBlocks(0, 0, 0, 1, 0, 1, 2, 2); }
+            if (rotation = 1) { do setBlocks(0, 1, 2, 0, 1, 1, 1, 2); }
+            if (rotation = 2) { do setBlocks(0, 1, 1, 1, 0, 0, 1, 2); }
+            if (rotation = 3) { do setBlocks(2, 0, 1, 2, 0, 1, 1, 1); }
+        }
+        // O
+        if (type = 3) {
+            do setBlocks(0, 1, 0, 1, 0, 0, 1, 1);
+        }
+        // S
+        if (type = 4) {
+            if ((rotation = 0) | (rotation = 2)) {
+                do setBlocks(1, 2, 0, 1, 0, 0, 1, 1);
+            } else {
+                do setBlocks(0, 0, 1, 1, 0, 1, 1, 2);
+            }
+        }
+        // T
+        if (type = 5) {
+            if (rotation = 0) { do setBlocks(0, 1, 2, 1, 0, 0, 0, 1); }
+            if (rotation = 1) { do setBlocks(1, 0, 1, 1, 0, 1, 1, 2); }
+            if (rotation = 2) { do setBlocks(1, 0, 1, 2, 0, 1, 1, 1); }
+            if (rotation = 3) { do setBlocks(0, 0, 1, 0, 0, 1, 1, 2); }
+        }
+        // Z
+        if (type = 6) {
+            if ((rotation = 0) | (rotation = 2)) {
+                do setBlocks(0, 1, 1, 2, 0, 0, 1, 1);
+            } else {
+                do setBlocks(1, 1, 0, 0, 0, 1, 1, 2);
+            }
+        }
+        return;
+    }
+
+    method void setBlocks(int x0, int x1, int x2, int x3, int y0, int y1, int y2, int y3) {
+        let blocksX[0] = x0; let blocksX[1] = x1; let blocksX[2] = x2; let blocksX[3] = x3;
+        let blocksY[0] = y0; let blocksY[1] = y1; let blocksY[2] = y2; let blocksY[3] = y3;
+        return;
+    }
+}

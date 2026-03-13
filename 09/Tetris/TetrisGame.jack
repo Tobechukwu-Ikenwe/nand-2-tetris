@@ -1,0 +1,129 @@
+/** TetrisGame class - Manages the game flow. */
+class TetrisGame {
+    field Board board;
+    field Piece currentPiece;
+    field int score;
+    field boolean gameOver;
+    field int randSeed;
+
+    constructor TetrisGame new() {
+        let board = Board.new();
+        let score = 0;
+        let gameOver = false;
+        let randSeed = 7; // Arbitrary seed
+        let currentPiece = spawnPiece();
+        return this;
+    }
+
+    method void dispose() {
+        do board.dispose();
+        if (~(currentPiece = 0)) { do currentPiece.dispose(); }
+        do Memory.deAlloc(this);
+        return;
+    }
+
+    method Piece spawnPiece() {
+        var int type;
+        // Simple LCG for random piece type 0..6
+        let randSeed = (randSeed * 31) + 13;
+        if (randSeed < 0) { let randSeed = -randSeed; }
+        let type = randSeed;
+        while (type > 6) { let type = type - 7; }
+        return Piece.new(type);
+    }
+
+    method void run() {
+        var char key;
+        var int timer;
+
+        do board.draw();
+        while (~gameOver) {
+            let timer = 0;
+            do drawPiece(true); // Draw piece at start of drop step
+            while (timer < 20) {
+                let key = Keyboard.keyPressed();
+                if (key = 130) { do move(-1, 0); } // Left
+                if (key = 132) { do move(1, 0); }  // Right
+                if (key = 131) { do rotate(); }    // Up (Rotate)
+                if (key = 133) { do move(0, 1); }  // Down
+                if (key = 140) { let gameOver = true; } // ESC
+
+                do Sys.wait(5);
+                let timer = timer + 1;
+            }
+
+            // Automatic drop
+            if (~move(0, 1)) {
+                do lockPiece();
+                let score = score + (board.clearFullRows() * 100);
+                do board.draw(); // Redraw board after potential line clear
+                let currentPiece = spawnPiece();
+                if (checkCollision(currentPiece)) {
+                    let gameOver = true;
+                }
+            }
+        }
+
+        do Output.moveCursor(10, 22);
+        do Output.printString("GAME OVER!");
+        return;
+    }
+
+    /** Tries to move current piece. Returns true on success. */
+    method boolean move(int dx, int dy) {
+        do drawPiece(false); // Erase
+        let currentPiece.move(dx, dy);
+        if (checkCollision(currentPiece)) {
+            let currentPiece.move(-dx, -dy); // Undo
+            do drawPiece(true);
+            return false;
+        }
+        do drawPiece(true);
+        return true;
+    }
+
+    method void rotate() {
+        do drawPiece(false);
+        do currentPiece.rotate();
+        if (checkCollision(currentPiece)) {
+            do currentPiece.unrotate();
+        }
+        do drawPiece(true);
+        return;
+    }
+
+    /** Returns true if piece collides with board or edges. */
+    method boolean checkCollision(Piece p) {
+        var int i, r, c;
+        let i = 0;
+        while (i < 4) {
+            let r = p.getBlockY(i);
+            let c = p.getBlockX(i);
+            if ((r < 0) | (r > 19) | (c < 0) | (c > 9)) { return true; }
+            if (board.isOccupied(r, c)) { return true; }
+            let i = i + 1;
+        }
+        return false;
+    }
+
+    method void lockPiece() {
+        var int i;
+        let i = 0;
+        while (i < 4) {
+            do board.setCell(currentPiece.getBlockY(i), currentPiece.getBlockX(i), true);
+            let i = i + 1;
+        }
+        do currentPiece.dispose();
+        return;
+    }
+
+    method void drawPiece(boolean state) {
+        var int i;
+        let i = 0;
+        while (i < 4) {
+            do board.drawBlock(currentPiece.getBlockY(i), currentPiece.getBlockX(i), state);
+            let i = i + 1;
+        }
+        return;
+    }
+}

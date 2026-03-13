@@ -1,0 +1,94 @@
+// Math.jack - Project 12: OS Math library
+class Math {
+    static Array twoToThe;
+
+    function void init() {
+        var int i, val;
+        let twoToThe = Array.new(16);
+        let twoToThe[0] = 1;
+        let i = 1;
+        while (i < 16) {
+            let twoToThe[i] = twoToThe[i-1] + twoToThe[i-1];
+            let i = i + 1;
+        }
+        return;
+    }
+
+    function int powerOfTwo(int j) {
+        return twoToThe[j];
+    }
+
+    function boolean bit(int x, int j) {
+        return ~((x & twoToThe[j]) = 0);
+    }
+
+    function int multiply(int x, int y) {
+        var int sum, shiftedX, j;
+        let sum = 0;
+        let shiftedX = x;
+        let j = 0;
+        while (j < 16) {
+            if (Math.bit(y, j)) {
+                let sum = sum + shiftedX;
+            }
+            let shiftedX = shiftedX + shiftedX;
+            let j = j + 1;
+        }
+        return sum;
+    }
+
+    function int divide(int x, int y) {
+        var int negX, negY, result;
+        let negX = x < 0;
+        let negY = y < 0;
+        if (negX) { let x = -x; }
+        if (negY) { let y = -y; }
+        let result = Math.dividePositive(x, y);
+        if (negX = negY) {
+            return result;
+        } else {
+            return -result;
+        }
+    }
+
+    function int dividePositive(int x, int y) {
+        var int q, r;
+        if ((y > x) | (y < 0)) { return 0; }
+        let q = Math.dividePositive(x, y + y);
+        if ((x - (2 * Math.multiply(q, y))) < y) {
+            return q + q;
+        } else {
+            return q + q + 1;
+        }
+    }
+
+    function int sqrt(int x) {
+        var int y, j, approx, approxSq;
+        let y = 0;
+        let j = 7;
+        while (j > -1) {
+            let approx = y + twoToThe[j];
+            let approxSq = Math.multiply(approx, approx);
+            if (~(approxSq > x) & (approxSq > 0)) {
+                let y = approx;
+            }
+            let j = j - 1;
+        }
+        return y;
+    }
+
+    function int max(int a, int b) {
+        if (a > b) { return a; }
+        return b;
+    }
+
+    function int min(int a, int b) {
+        if (a < b) { return a; }
+        return b;
+    }
+
+    function int abs(int x) {
+        if (x < 0) { return -x; }
+        return x;
+    }
+}

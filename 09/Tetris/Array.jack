@@ -1,0 +1,13 @@
+// Array.jack - Project 12: OS Array class
+class Array {
+    /** Allocates a new Array of the given size and returns a reference to it. */
+    function Array new(int size) {
+        return Memory.alloc(size);
+    }
+
+    /** Disposes this Array by de-allocating its memory. */
+    method void dispose() {
+        do Memory.deAlloc(this);
+        return;
+    }
+}
