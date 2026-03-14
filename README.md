@@ -33,7 +33,7 @@ The namesake game of the course is fully implemented and playable! It demonstrat
 
 ### How to Play
 1.  **Download the Tools**: Get the official software suite from [nand2tetris.org](https://www.nand2tetris.org/software).
-2.  **Open CPU Emulator**: Run `CPUEmulator.bat`.
+2.  **Open CPU Emulator**: Run `CPUEmulator.bat`. or` CPUEmulator.sh` on linux
 3.  **Load the Game**: File -> Load Program -> `09/Tetris/Tetris.hack`.
 4.  **Important Settings**:
     *   Set **Animate** to **"No Animation"** (required for playable speed).
